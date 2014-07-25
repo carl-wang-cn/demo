@@ -1,55 +1,33 @@
+// 在代码中生成公私密钥对
+
 #include <openssl/rsa.h>
 #include <iostream>
 #include <memory.h>
-#define _RSA_KEY_PAIR_GENERATE_//密钥是否要生成 只需要在第一次运行时打开此宏
-#define _RSA_KEY_PAIR_TOFILE_//密钥对是否要写入文件
-#define  MAX_RSA_KEY_LENGTH 512 //密钥的最大长度是512字节
-#define PUBKEY_ENCRYPT
-#define PRIKEY_DECRYPT
 
-static const char * PUBLIC_KEY_FILE = "pubkey.key";
-static const char * PRIVATE_KEY_FILE = "prikey.key";
+const int MAX_RSA_KEY_LENGTH = 512; //密钥的最大长度是512字节
+
+unsigned char pub_key[MAX_RSA_KEY_LENGTH] = {0};
+unsigned char pri_key[MAX_RSA_KEY_LENGTH] = {0};
+int pub_key_len = 0;
+int pri_key_len = 0;
 
 using namespace std;
 
-int RsaKeyPairGen(void)
+int gen_rsakeypair(void)
 {
     RSA *rsa = NULL;
+    unsigned char *pt = NULL;
+    unsigned char *pt2 = NULL;
 
-#ifdef _RSA_KEY_PAIR_GENERATE_
     //生成RSA密钥对：
     rsa = RSA_new();
     rsa = RSA_generate_key(1024, 0x10001, NULL, NULL);
-#endif
 
-    //把密钥对写入文件，以后从文件里读取
-#ifdef _RSA_KEY_PAIR_TOFILE_
-    unsigned char ucPubKey[MAX_RSA_KEY_LENGTH] = {0}, ucPriKey[MAX_RSA_KEY_LENGTH] = {0};
-    unsigned char* pt = ucPubKey;
-    int len = i2d_RSAPublicKey(rsa, &pt);
+    pt = pub_key;
+    pub_key_len = i2d_RSAPublicKey(rsa, &pt);
 
-    FILE *fpubkey = NULL;
-    fpubkey = fopen(PUBLIC_KEY_FILE, "wb");
-    if(fpubkey == NULL)
-    {
-        cout << "fopen pubkey.key failed!" << endl;
-        return 0x01;
-    }
-    fwrite(ucPubKey, 1, len, fpubkey);
-    fclose(fpubkey);
-
-    unsigned char* pt2 = ucPriKey;
-    len = i2d_RSAPrivateKey(rsa,&pt2);
-    FILE *fprikey = NULL;
-    fprikey = fopen(PRIVATE_KEY_FILE, "wb");
-    if(fprikey == NULL)
-    {
-        cout << "fopen prikey.key failed!" << endl;
-        return 0x02;
-    }
-    fwrite(ucPriKey, 1, len, fprikey);
-    fclose(fprikey);
-#endif
+    pt2 = pri_key; // 这里如果复用上面的pt指针，在下一行就会改变pub_key_len的值，不知道为什么
+    pri_key_len = i2d_RSAPrivateKey(rsa, &pt2);
 
     if(rsa != NULL)
     {
@@ -59,118 +37,86 @@ int RsaKeyPairGen(void)
     return 0;
 }
 
-//从文件里读取私钥的数据，取得RSA格式的私钥：
-int GetPriKey(const unsigned char *pucPriKeyData, unsigned long KeyDataLen, RSA* *priRsa)
+//取得RSA格式的私钥：
+int get_prikey(const unsigned char *pri_key, unsigned long pri_key_len, RSA **pri_rsa)
 {
-    const unsigned char *Pt = pucPriKeyData;
-    *priRsa = d2i_RSAPrivateKey(NULL, &Pt, KeyDataLen);
-    if(priRsa == NULL)
+    const unsigned char *pt = pri_key;
+    *pri_rsa = d2i_RSAPrivateKey(NULL, &pt, pri_key_len);
+    if (NULL == pri_rsa)
     {
-        cout << "priRsa == NULL!" << endl;
+        cout << "pri_rsa == NULL!" << endl;
         return 0x22;
     }
     return 0;
 }
 
 //取得RSA格式的公钥：
-int GetPubKey(const unsigned char *pucPubKeyData,unsigned long KeyDataLen, RSA* *pubRsa)
+int get_pubkey(const unsigned char *pub_key,unsigned long pub_keylen, RSA **pub_rsa)
 {
-    const unsigned char *Pt = pucPubKeyData;
-    *pubRsa = d2i_RSAPublicKey(NULL, &Pt, KeyDataLen);
-    if(pubRsa == NULL)
+    const unsigned char *pt = pub_key;
+    *pub_rsa = d2i_RSAPublicKey(NULL, &pt, pub_keylen);
+    if (NULL == pub_rsa)
     {
-        cout << "pubRsa == NULL!" << endl;
+        cout << "pub_rsa == NULL!" << endl;
         return 0x31;
     }
     return 0;
 }
 
-//公钥加密会话密钥：
-int encSessionKeybyRsaPubKey(RSA *rsa, unsigned char *ucKey, unsigned long ulKeyLen,
-        unsigned char *outData, unsigned long *pulOutLen)
+//公钥加密
+int enc_by_rsapubkey(RSA *rsa, unsigned char *plain_text, unsigned long plain_text_len,
+        unsigned char *encrypted_text, unsigned long *encrypted_text_len)
 {
-    return (*pulOutLen = RSA_public_encrypt(ulKeyLen, ucKey, outData, rsa, 1));
+    *encrypted_text_len = RSA_public_encrypt(plain_text_len, plain_text, encrypted_text, rsa, RSA_PKCS1_PADDING);
+    return *encrypted_text_len;
 }
 
-//私钥解密会话密钥：
-int decSessionKeybyRsaPriKey(RSA *rsa, unsigned char *InData, unsigned long ulDataLen,
-        unsigned char *ucKey, unsigned long *pulKeyLen)
+//私钥解密：
+int dec_by_rsaprikey(RSA *rsa, unsigned char *encrypted_text, unsigned long encrypted_text_len,
+        unsigned char *plain_text, unsigned long *plain_text_len)
 {
-    return (*pulKeyLen = RSA_private_decrypt(ulDataLen, InData, ucKey, rsa, 1));
+    *plain_text_len = RSA_private_decrypt(encrypted_text_len, encrypted_text, plain_text, rsa, RSA_PKCS1_PADDING);
+    return *plain_text_len;
 }
 
 
-int main(int argc, char* argv[])
+int main(int argc, char **argv)
 {
-    unsigned char ucKey[8] = {0x01, 0x03, 0x99, 0x4, 0x80, 0x65, 0x34, 0x08};
-    unsigned char ucEncryptedKey[512] = {0}, ucDecryptedKey[512] = {0};
-    unsigned long encrypted_len = 0, decrypted_len = 0;
+    unsigned char plain_text[8] = {0x01, 0x03, 0x99, 0x4, 0x80, 0x65, 0x34, 0x08};
+    unsigned char encrypted_text[512] = {0};
+    unsigned char decrypted_text[512] = {0};
+    unsigned long encrypted_len = 0;
+    unsigned long decrypted_len = 0;
 
+    gen_rsakeypair();
 
-#ifdef  _RSA_KEY_PAIR_GENERATE_
-    RsaKeyPairGen();
-#endif
+    RSA *p_rsa_pubkey = NULL;
+    p_rsa_pubkey = RSA_new();
 
-    //取得公钥：
-    unsigned char ucPubKey[MAX_RSA_KEY_LENGTH] = {0};
-
-    FILE *fpubkey = NULL;
-    fpubkey = fopen(PUBLIC_KEY_FILE, "rb");
-    if(fpubkey == NULL)
-    {
-        cout << "fopen pubkey.key failed!" << endl;
-        return 0x03;
-    }
-    fseek(fpubkey, 0, SEEK_END);
-    int len_PK = ftell(fpubkey);
-    fseek(fpubkey, 0, SEEK_SET);
-    fread(ucPubKey, 1, len_PK, fpubkey);
-    fclose(fpubkey);
-
-#ifdef  PUBKEY_ENCRYPT
-    RSA *pRsaPubKey = NULL;
-    pRsaPubKey = RSA_new();
-
-    GetPubKey(ucPubKey, len_PK, &pRsaPubKey);
+    get_pubkey(pub_key, pub_key_len, &p_rsa_pubkey);
     //公钥加密：
-    encSessionKeybyRsaPubKey(pRsaPubKey, ucKey, sizeof(ucKey), ucEncryptedKey, &encrypted_len);
+    enc_by_rsapubkey(p_rsa_pubkey, plain_text, sizeof(plain_text), encrypted_text, &encrypted_len);
 
-    if(pRsaPubKey != NULL)
+    if(p_rsa_pubkey != NULL)
     {
-        RSA_free(pRsaPubKey); pRsaPubKey = NULL;
+        RSA_free(p_rsa_pubkey); 
+        p_rsa_pubkey = NULL;
     }
-#endif
 
-    //取得私钥：
-    unsigned char ucPriKey[MAX_RSA_KEY_LENGTH] = {0};
+    RSA *p_rsa_prikey = NULL;
+    p_rsa_prikey = RSA_new();
 
-    FILE *fprikey = NULL;
-    fprikey = fopen(PRIVATE_KEY_FILE, "rb");
-    if(fprikey == NULL)
-    {
-        cout << "fopen prikey.key failed!" << endl;
-        return 0x02;
-    }
-    fseek(fprikey, 0, SEEK_END);
-    int len_SK = ftell(fprikey);
-    fseek(fprikey, 0, SEEK_SET);
-    fread(ucPriKey, 1, len_SK, fprikey);
-    fclose(fprikey);
-
-#ifdef PRIKEY_DECRYPT
-    RSA *pRsaPriKey = NULL;
-    pRsaPriKey = RSA_new();
-
-    GetPriKey(ucPriKey, len_SK, &pRsaPriKey);
+    get_prikey(pri_key, pri_key_len, &p_rsa_prikey);
     //私钥解密：
-    decSessionKeybyRsaPriKey(pRsaPriKey, ucEncryptedKey, encrypted_len, ucDecryptedKey, &decrypted_len);
-    if(pRsaPriKey != NULL)
+    dec_by_rsaprikey(p_rsa_prikey, encrypted_text, encrypted_len, decrypted_text, &decrypted_len);
+    if(p_rsa_prikey != NULL)
     {
-        RSA_free(pRsaPriKey); pRsaPriKey = NULL;
+        RSA_free(p_rsa_prikey); 
+        p_rsa_prikey = NULL;
     }
 
     //数据对比：
-    if(0 == memcmp(ucKey, ucDecryptedKey, decrypted_len))
+    if(0 == memcmp(plain_text, decrypted_text, decrypted_len))
     {
         cout << "OK!" << endl;
     }
@@ -178,7 +124,6 @@ int main(int argc, char* argv[])
     {
         cout << "FAILED!" << endl;
     }
-#endif
 
     return 0;
 }
