@@ -1,0 +1,3 @@
+this is a test file
+it is used to test fifo read and write
+goodbye
