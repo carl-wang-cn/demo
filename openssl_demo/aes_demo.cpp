@@ -13,7 +13,7 @@ int aes_encrypt(char* in, char* key, char* out)//, int olen)可能会设置buf�
         return 0;
     }
 
-    unsigned char iv[AES_BLOCK_SIZE] = {};//加密的初始化向量
+    unsigned char iv[AES_BLOCK_SIZE] = {};
     for(int i=0; i<AES_BLOCK_SIZE; ++i)//iv一般设置为全0,可以设置其他，但是加密解密要一样就行
     {
         iv[i]=0;
@@ -41,7 +41,7 @@ int aes_decrypt(char* in, char* key, char* out)
         return 0;
     }
 
-    unsigned char iv[AES_BLOCK_SIZE] = {};//加密的初始化向量
+    unsigned char iv[AES_BLOCK_SIZE] = {};
     for(int i=0; i<AES_BLOCK_SIZE; ++i)//iv一般设置为全0,可以设置其他，但是加密解密要一样就行
     {
         iv[i]=0;
@@ -86,13 +86,19 @@ int main(int argc,char *argv[])
         return -1;
     }
 
+    printf("\n");
+    printf("before encrypt, the plaintext is:\n[%lu]:%s\n", strlen(clearString), clearString);
+    printf("after encrypt, the encrypted text len is:%s\n", encryptString);
+    printf("after decrypt, the decrypted text is:\n[%lu]:%s\n", strlen(decryptString), decryptString);
+    printf("\n");
+
     if (memcmp(clearString, decryptString, MSG_LEN) == 0)
     {
-        printf("ok\n");
+        printf("Yes, it worked!\n");
     }
     else
     {
-        printf("error\n");
+        printf("Oh, no!\n");
     }
 
     return 0;

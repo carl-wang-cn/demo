@@ -1,4 +1,4 @@
-// 通过命令行openssl命令来生成公私密钥对
+// 通过命令行openssl命令来生成PEM格式公私密钥对
 
 #include<stdio.h>
 #include<stdlib.h>
@@ -15,21 +15,22 @@
 #define OPENSSLKEY "test.key"
 #define PUBLICKEY "test_pub.key"
 
-char* my_encrypt(char *str,char *path_key);//加密
-char* my_decrypt(char *str,char *path_key);//解密
+char* my_encrypt(char *str, char *path_key);//加密
+char* my_decrypt(char *str, char *path_key);//解密
 
 int main(void)
 {
-    char *source="i like dancing !";
+    char source[] = "i like dancing !";
     char *ptr_en = NULL;
     char *ptr_de = NULL;
 
-    printf("source is    :%s\n",source);
+    printf("source is    :[%lu]%s\n", strlen(source), source);
     ptr_en = my_encrypt(source, PUBLICKEY);
     printf("after encrypt:%s\n", ptr_en);
 
     ptr_de = my_decrypt(ptr_en, OPENSSLKEY);
-    printf("after decrypt:%s\n",ptr_de);
+    printf("after decrypt:[%lu]%s\n", strlen(ptr_de), ptr_de);
+
     if (ptr_en != NULL)
     {
         free(ptr_en);
@@ -42,7 +43,7 @@ int main(void)
     }   
     return 0;
 }
-char *my_encrypt(char *str,char *path_key)
+char *my_encrypt(char *str, char *path_key)
 {
     char *p_en = NULL;
     RSA *p_rsa = NULL;
@@ -58,7 +59,7 @@ char *my_encrypt(char *str,char *path_key)
     }   
 
     p_rsa = PEM_read_RSA_PUBKEY(file, NULL, NULL, NULL);
-//  p_rsa=PEM_read_RSAPublicKey(file,NULL,NULL,NULL))==NULL)  // 换成这句死活通不过，无论是否将公钥分离源文件
+//  p_rsa=PEM_read_RSAPublicKey(file, NULL, NULL, NULL))==NULL)  // 换成这句死活通不过，无论是否将公钥分离源文件
     if (NULL == p_rsa)
     {
         ERR_print_errors_fp(stdout);
@@ -69,7 +70,7 @@ char *my_encrypt(char *str,char *path_key)
     rsa_len = RSA_size(p_rsa);
     p_en = ( char *)malloc(rsa_len+1);
     memset(p_en, 0, rsa_len+1);
-    if (RSA_public_encrypt(flen, (unsigned char *)str, (unsigned char*)p_en, p_rsa,RSA_PKCS1_PADDING) < 0)
+    if (RSA_public_encrypt(flen, (unsigned char *)str, (unsigned char*)p_en, p_rsa, RSA_PKCS1_PADDING) < 0)
     {
         perror("pub encrypt error");
         return NULL;
@@ -89,7 +90,7 @@ char *my_decrypt(char *str, char *path_key)
     int flen = 0;
 
     file = fopen(path_key, "r");
-    if(NULL == file)
+    if (NULL == file)
     {
         perror("open key file error");
         return NULL;
@@ -105,8 +106,9 @@ char *my_decrypt(char *str, char *path_key)
     flen = strlen(str); // must < rsa_len-11
     rsa_len = RSA_size(p_rsa);
     p_de = (char *)malloc(rsa_len+1);
-    memset(p_de,0,rsa_len+1);
-    if(RSA_private_decrypt(flen, (unsigned char *)str, (unsigned char*)p_de, p_rsa, RSA_PKCS1_PADDING) < 0)
+    memset(p_de, 0, rsa_len+1);
+    int de_len = RSA_private_decrypt(flen, (unsigned char *)str, (unsigned char*)p_de, p_rsa, RSA_PKCS1_PADDING);
+    if (de_len < 0)
     {
         perror("pri decrypt error");
         return NULL;

@@ -1,3 +1,5 @@
+// 另一种在代码中生成公私密钥对的方法
+
 #include <stdio.h>
 #include<string.h>
 #include <openssl/bio.h>
@@ -5,30 +7,24 @@
 #include <openssl/pem.h>
 #include <openssl/err.h>
 
-#define MSG_LEN (128+1)
-
-//打印函数，以16进制显示字符内容
-void print_hex(char* buff)
-{
-    for (int i=0;buff[i];i++)
-    {
-        printf("%02x",(unsigned char)buff[i]);
-    }
-    printf("\n");
-}
+const int MSG_LEN = 128+1;
+const char *PUBKEY_FILE = "public.rsa";
+const char *PRIKEY_FILE = "private.rsa";
 
 //生成RSA公钥和私钥文件
 int createRSAPEM()
 {
-    int ret=0;
-    BIO *bpub, *bpri;
-    bpub = BIO_new_file("public.rsa", "w");
+    int ret = 0;
+    BIO *bpub = NULL;
+    BIO *bpri = NULL;
+
+    bpub = BIO_new_file(PUBKEY_FILE, "w");
     if (!bpub)
     {
         printf("failed to create public bio file\n");
     }
 
-    bpri = BIO_new_file("private.rsa", "w");
+    bpri = BIO_new_file(PRIKEY_FILE, "w");
     if (!bpri)
     {
         printf("failed to create private bio file\n");
@@ -75,24 +71,24 @@ EXIT:
 }
 
 //使用公钥加密
-int rsa_encrypt(char *in, char *key_path, char* out)
+int rsa_encrypt(char *in, const char *key_path, char* out)
 {
     RSA *p_rsa;
     FILE *file;
     int rsa_len;
-    if((file=fopen(key_path,"r"))==NULL)
+    if ((file=fopen(key_path, "r"))==NULL)
     {
         perror("open key file error");
         return 0;
     }
 
-    //if((p_rsa=PEM_read_RSA_PUBKEY(file,NULL,&ccbb,NULL))==NULL){
-    if((p_rsa=PEM_read_RSAPublicKey(file,NULL,NULL,NULL))==NULL){
+    //if ((p_rsa=PEM_read_RSA_PUBKEY(file, NULL, &ccbb, NULL))==NULL){
+    if ((p_rsa=PEM_read_RSAPublicKey(file, NULL, NULL, NULL))==NULL){
         ERR_print_errors_fp(stdout);
         return 0;
     }
     rsa_len=RSA_size(p_rsa);
-    if(RSA_public_encrypt(rsa_len,(unsigned char*)in,(unsigned char*)out,p_rsa,RSA_NO_PADDING)<0)
+    if (RSA_public_encrypt(rsa_len, (unsigned char*)in, (unsigned char*)out, p_rsa, RSA_NO_PADDING)<0)
     {
         return 0;
     }
@@ -102,25 +98,25 @@ int rsa_encrypt(char *in, char *key_path, char* out)
 }
 
 //使用私钥解密
-int rsa_decrypt(char *in, char *key_path, char* out)
+int rsa_decrypt(char *in, const char *key_path, char* out)
 {
     RSA *p_rsa;
     FILE *file;
     int rsa_len;
-    if((file=fopen(key_path,"r"))==NULL)
+    if ((file=fopen(key_path, "r"))==NULL)
     {
         perror("open key file error");
         return 0;
     }
 
-    if((p_rsa=PEM_read_RSAPrivateKey(file,NULL,NULL,NULL))==NULL)
+    if ((p_rsa=PEM_read_RSAPrivateKey(file, NULL, NULL, NULL))==NULL)
     {
         ERR_print_errors_fp(stdout);
         return 0;
     }
 
     rsa_len=RSA_size(p_rsa);
-    if(RSA_private_decrypt(rsa_len,(unsigned char*)in,(unsigned char*)out,p_rsa,RSA_NO_PADDING)<0)
+    if (RSA_private_decrypt(rsa_len, (unsigned char*)in, (unsigned char*)out, p_rsa, RSA_NO_PADDING)<0)
     {
         return 0;
     }
@@ -129,37 +125,40 @@ int rsa_decrypt(char *in, char *key_path, char* out)
     return 1;
 }
 
-int main(int argc,char**argv)
+int main(int argc, char**argv)
 {
-    char clearString[MSG_LEN] = {};
+    char clearString[MSG_LEN] = "this is the data to be encrypted";
     char encryptString[MSG_LEN] = {};;
     char decryptString[MSG_LEN] = {}; 
 
     createRSAPEM();
-    strcpy((char*)clearString, "123456789 123456789 123456789 12a");
 
-    char pubkey[]="public.rsa";
-    char prikey[]="private.rsa";
-
-    if(!rsa_encrypt(clearString, pubkey, encryptString))
+    if (!rsa_encrypt(clearString, PUBKEY_FILE, encryptString))
     {
         printf("encrypt error\n");
         return -1;
     }
 
-    if(!rsa_decrypt(encryptString, prikey, decryptString))
+    if (!rsa_decrypt(encryptString, PRIKEY_FILE, decryptString))
     {
         printf("decrypt error\n");
         return -1;
     }
 
+    printf("\n");
+    printf("before encrypt, the plaintext is:\n[%lu]:%s\n", strlen(clearString), clearString);
+    printf("after encrypt, the encrypted text len is:%s\n", encryptString);
+    printf("after decrypt, the decrypted text is:\n[%lu]:%s\n", strlen(decryptString), decryptString);
+    printf("\n");
+
     if (memcmp(clearString, decryptString, MSG_LEN) == 0)
     {
-        printf("ok\n");
+        printf("Yes, it worked!\n");
     }
     else
     {
-        printf("error\n");
+        printf("Oh, no!\n");
     }
+
     return 0;
 }
