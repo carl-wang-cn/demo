@@ -6,6 +6,7 @@ the first demo to study thrift
 3. Also, there is a simple\_client and nonblock\_client implemented in the file client.cpp.
 
 **test instructions:**
+
 1. start the server
 2. start the client
 3. you will see the obj sent by the client on the server side, printed out in the screen
