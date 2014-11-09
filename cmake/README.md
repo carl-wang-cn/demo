@@ -6,11 +6,13 @@
 * CMAKE\_LIBRARY\_PATH 环境变量
 * CMAKE\_CURRENT\_SOURCE\_DIR 当前处理的CMakeLists.txt所在的路径
 * CMAKE\_CURRENT\_BINARY\_DIR target编译目录
+
   使用ADD\_SURDIRECTORY(src bin)可以更改此变量的值
   SET(EXECUTABLE\_OUTPUT\_PATH &lt;新路径>)并不会对此变量有影响,只是改变了最终目标文件的存储路径
 * CMAKE\_CURRENT\_LIST\_FILE 输出调用这个变量的CMakeLists.txt的完整路径
 * CMAKE\_CURRENT\_LIST\_LINE 输出这个变量所在的行
 * CMAKE\_MODULE\_PATH 定义自己的cmake模块所在的路径
+
   SET(CMAKE\_MODULE\_PATH ${PROJECT\_SOURCE\_DIR}/cmake),然后可以用INCLUDE命令来调用自己的模块
 * EXECUTABLE\_OUTPUT\_PATH 重新定义目标二进制可执行文件的存放位置
 * LIBRARY\_OUTPUT\_PATH 重新定义目标链接库文件的存放位置
