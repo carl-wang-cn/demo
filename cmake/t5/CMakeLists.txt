@@ -1,0 +1,4 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+PROJECT(t5)
+MESSAGE(STATUS "此Project演示了如何使用cmake预定义的cmake模块(FindCURL.cmake)")
+ADD_SUBDIRECTORY(src)
