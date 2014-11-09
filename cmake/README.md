@@ -54,6 +54,7 @@
 #####部分常用命令列表：
 
 * PROJECT
+
   PROJECT(projectname [CXX] [C] [Java])
   指定工程名称,并可指定工程支持的语言。支持语言列表可忽略,默认支持所有语言
 * SET
