@@ -1,3 +1,5 @@
+// 从文件data.txt中读出数据，写入到FIFO中
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -7,28 +9,27 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include "../unpipc.h"
 
-#define FILE_MODE (S_IRUSR | S_IWUSR | S_ISGID | S_IROTH)
 
 int main(int argc, char **argv)
 {
-    const char *fifo_name = "/tmp/my_fifo";
     int write_fd = -1;
     int read_fd = -1;
     int res = 0;
-    const int open_mode = O_WRONLY;
     int bytes_sent = 0;
     char buffer[PIPE_BUF+1] = {};
 
-    res = mkfifo(fifo_name, FILE_MODE);
+    res = mkfifo(FIFO, FILE_MODE);
     if (res != 0 && EEXIST != errno)
     {
-        fprintf(stderr, "could not create fifo %s\n", fifo_name);
+        fprintf(stderr, "could not create fifo %s\n", FIFO);
         exit(EXIT_FAILURE);
     }
     
     printf("process %d opening fifo w_wronly\n", getpid());
-    write_fd = open(fifo_name, O_WRONLY);
+
+    write_fd = open(FIFO, O_WRONLY);
     read_fd = open("data.txt", O_RDONLY);
     printf("process %d result: writefd=%d, readfd=%d\n", getpid(), write_fd, read_fd);
 

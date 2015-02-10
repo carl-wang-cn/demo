@@ -3,6 +3,7 @@
  field[0] 用来读，field[1] 用来写
  注意：有的系统，pipe提供的是全双工管道，但现实中通常不会这么用
  */
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -40,3 +41,4 @@ int main(int argc, char **argv)
 
     exit(EXIT_FAILURE);
 }
+

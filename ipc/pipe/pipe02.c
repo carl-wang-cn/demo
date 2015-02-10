@@ -1,6 +1,7 @@
 /*
  popen函数，FILE *popen(const char *command, const char *type);
- 创建一个管道并启动另外一个进程(command命令)，该进程要么从该管道读出标准输入（type为"w"），要么往该管道写入标准输出（type 为"r"）
+ 创建一个管道并启动另外一个进程(command命令)，该进程要么从该管
+ 道读出标准输入（type为"w"），要么往该管道写入标准输出（type 为"r"）
  */
 #include <unistd.h>
 #include <stdlib.h>
