@@ -20,8 +20,7 @@ int pipe(int fd[2]);
 #include <stdio.h>
 
 FILE *popen(const char *command, const char *type);
-返回: 成功返回文件指针, 失败返回NULL
-
+返回: 成功返回文件指针，失败返回NULL
 注意: popen不对标准错误输出做任何处理, 只有标准输出才被重定向到由它创建的管道
 
 int pclose(FILE *stream);
