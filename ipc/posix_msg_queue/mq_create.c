@@ -9,8 +9,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
-
-#define FILE_MODE (S_IRUSR | S_IWUSR | S_ISGID | S_IROTH)
+#include "../unpipc.h"
 
 int main(int argc, char **argv)
 {
@@ -41,11 +40,13 @@ int main(int argc, char **argv)
         exit(-1);
     }
 
+    // mq_msgsize and mq_maxmsg must be set at the same time
     if ((attr.mq_maxmsg == 0 && attr.mq_msgsize != 0) || (attr.mq_maxmsg != 0 && attr.mq_msgsize == 0))
     {
         fprintf(stderr, "must specify both -m maxmsg and -z msgsize at the same time");
         exit(-1);
     }
+
     mqd = mq_open(argv[optind], flags, FILE_MODE, (attr.mq_maxmsg != 0) ? &attr: NULL);
     if (-1 == mqd)
     {
@@ -53,7 +54,11 @@ int main(int argc, char **argv)
         exit(-1);
     }
 
+    // mq_close后, 调用进程可不再使用该描述符,但其消息队列并不从系统中删除
+    // 一个进程终止时，它的所有打开着的消息队列都关闭，就像调用了mq_close一样
+    // 要从系统中删除用作mq_open第一个参数的某个name, 必须调用mq_unlink
     mq_close(mqd);
 
     return 0;
 }
+

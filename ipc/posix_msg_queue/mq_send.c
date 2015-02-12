@@ -7,7 +7,6 @@
 #include <errno.h>
 
 
-
 int main(int argc, char **argv)
 {
     mqd_t mqd;
@@ -18,7 +17,7 @@ int main(int argc, char **argv)
 
     if (argc != 4)
     {
-        fprintf(stdout, "usage: mq_send <name> <#byte> <priority>\n"); //优先级不能高于MQ_PRIO_MAX的值
+        fprintf(stdout, "usage: mq_send <name> <#byte> <priority>\n"); //优先级priority不能高于MQ_PRIO_MAX的值
         exit(-1);
     }
 
@@ -47,3 +46,4 @@ int main(int argc, char **argv)
 
     return 0;
 }
+

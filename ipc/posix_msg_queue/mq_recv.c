@@ -39,6 +39,7 @@ int main(int argc, char **argv)
         fprintf(stdout, "mq_open error:%d\n", errno);
     }
 
+    // 这里是要获取attr中的属性msgsize，来确定mq_receive需要开辟的buff大小
     ret = mq_getattr(mqd, &attr);
     if (-1 == ret)
     {
@@ -50,6 +51,7 @@ int main(int argc, char **argv)
 
     buff = malloc(attr.mq_msgsize); //buff的空间要不小于attr的msgsize成员，否则mq_receive会返回EMSGSIZE错误
 
+    // mq_receive总是返回最高优先级的最早消息
     n = mq_receive(mqd, buff, attr.mq_msgsize, &prio);
     if (-1 == n)
     {
@@ -61,3 +63,4 @@ int main(int argc, char **argv)
 
     return 0;
 }
+

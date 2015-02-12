@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <signal.h>
+#include <assert.h>
 
 volatile sig_atomic_t mqflag;  // set nonzero by signal handler
 static void sig_usr1(int);
@@ -42,6 +43,7 @@ int main(int argc, char **argv)
         exit(-1);
     }
     buff = malloc(attr.mq_msgsize); //buff的空间要不小于attr的msgsize成员，否则mq_receive会返回EMSGSIZE错误
+    assert(buff);
 
     sigemptyset(&zeromask);
     sigemptyset(&newmask);
@@ -89,3 +91,4 @@ static void sig_usr1(int signo)
     mqflag = 1;
     return;
 }
+

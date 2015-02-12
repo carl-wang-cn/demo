@@ -84,5 +84,7 @@ sigfunc_rt *signal_rt(int signo, sigfunc_rt *func, sigset_t *mask)
     {
         return ((sigfunc_rt *)SIG_ERR);
     }
+
     return oact.sa_sigaction;
 }
+

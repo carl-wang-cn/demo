@@ -1,29 +1,35 @@
-
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <mqueue.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/select.h>
 #include <unistd.h>
 #include <errno.h>
-#include <pthread.h>
+#include <signal.h>
 #include <assert.h>
 
-
-mqd_t mqd;
-struct mq_attr attr;
-struct sigevent sigev;
-
-static void notify_thread(union sigval); // our thread function
+int pipefd[2];
+static void sig_usr1(int);
 
 int main(int argc, char **argv)
 {
+    int nfds = 0;
+    char c;
+    fd_set rset;
+    mqd_t mqd;
+    void *buff = NULL;
+    ssize_t n;
+    struct mq_attr attr;
+    struct sigevent sigev;
     int ret = 0;
 
-    if (argc != 2)
+    if (2 != argc)
     {
-        fprintf(stdout, "usage: mq_notify03 <name>\n");
-        exit(-1);
+        fprintf(stderr, "usage: %s <name>\n", argv[0]);
+        exit(EXIT_FAILURE);
     }
 
     mqd = mq_open(argv[1], O_RDONLY | O_NONBLOCK);
@@ -38,12 +44,12 @@ int main(int argc, char **argv)
         perror("mq_getattr error");
         exit(-1);
     }
+    buff = malloc(attr.mq_msgsize); //buff的空间要不小于attr的msgsize成员，否则mq_receive会返回EMSGSIZE错误
+    assert(buff);
 
-    sigev.sigev_notify = SIGEV_THREAD;
-    sigev.sigev_value.sival_ptr = NULL;
-    sigev.sigev_notify_function = notify_thread;
-    sigev.sigev_notify_attributes = NULL;
-
+    signal(SIGUSR1, sig_usr1);
+    sigev.sigev_notify= SIGEV_SIGNAL;
+    sigev.sigev_signo = SIGUSR1;
     ret = mq_notify(mqd, &sigev);
     if (-1 == ret)
     {
@@ -51,34 +57,34 @@ int main(int argc, char **argv)
         exit(-1);
     }
 
-    for (;;)
+    FD_ZERO(&rset);
+    for(;;)
     {
-        pause();
+        FD_SET(pipefd[0], &rset);
+        nfds = select(pipefd[0]+1, &rset, NULL, NULL, NULL);
+
+        if (FD_ISSET(pipefd[0], &rset))
+        {
+            read(pipefd[0], &c, 1);
+            mq_notify(mqd, &sigev);
+            while ((n = mq_receive(mqd, buff, attr.mq_msgsize, NULL)) >= 0)
+            {
+                printf("read %ld bytes\n", (long)n);
+            }
+            if (errno != EAGAIN) // 表示暂无消息可读，属于正常现象
+            {
+                perror("mq_receive error");
+                exit(-1);
+            }
+        }
     }
 
-    exit(0);
+    return 0;
 }
 
-static void notify_thread(union sigval arg)
+static void sig_usr1(int signo)
 {
-    ssize_t n;
-    void *buff = NULL;
-
-    printf("notify_thread started\n");
-    buff = malloc(attr.mq_msgsize);
-    assert(NULL != buff);
-
-    while ((n = mq_receive(mqd, buff, attr.mq_msgsize, NULL)) >= 0)
-    {
-        printf("read %ld bytes\n", (long)n);
-    }
-    if (errno != EAGAIN) // 表示暂无消息可读，属于正常现象
-    {
-        perror("mq_receive error");
-        exit(-1);
-    }
-
-    free(buff);buff = NULL;
-    pthread_exit(NULL);
-    
+    write(pipefd[1], "", 1);
+    return;
 }
+

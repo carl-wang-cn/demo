@@ -1,7 +1,7 @@
 /*
  使用sigwait代替信号处理程序的信号通知
  调用sigwait前，我们阻塞某个信号集。我们将这个信号集指定为set参数。sigwait然后一直阻塞到这些信号中有一个或
- 多个待处理，这是它返回一个信号（存放在指针sig中）。这个过程称为“同步地等待一个异步事件”
+ 多个待处理，这时它返回一个信号（存放在指针sig中）。这个过程称为“同步地等待一个异步事件”
 
  大多数讨论线程的书，推荐在多线程化的进程中使用sigwait来处理所有信号，而绝不要使用异步信号处理程序
  */
@@ -61,6 +61,7 @@ int main(int argc, char **argv)
 
     for (;;)
     {
+        //sigwait调用会阻塞并等待SIGUSR1的递交
         ret = sigwait(&newmask, &signo);
         if (0 != ret)
         {
@@ -71,7 +72,9 @@ int main(int argc, char **argv)
 
         if (SIGUSR1 == signo)
         {
-            mq_notify(mqd, &sigev);
+            mq_notify(mqd, &sigev); // 重新注册通知
+
+            // 读出所有的可用消息
             while ((n = mq_receive(mqd, buff, attr.mq_msgsize, NULL)) >= 0)
             {
                 printf("read %ld bytes\n", (long)n);
