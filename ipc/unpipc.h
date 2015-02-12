@@ -8,5 +8,8 @@
 #define FIFO "/tmp/my_fifo"
 
 
+#define MIN(a, b) (a)>(b)?(b):(a)
+#define MAXNITEMS   1000000
+#define MAXNTHREADS 100
 
 #endif

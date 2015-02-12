@@ -4,11 +4,8 @@
 #include <pthread.h>
 #include <errno.h>
 #include <assert.h>
+#include "../unpipc.h"
 
-#define MAXNITEMS   1000000
-#define MAXNTHREADS 100
-
-#define min(a, b) (a)>(b)?(b):(a)
 
 int nitems;  // read-only by producer and consumer
 
@@ -34,8 +31,8 @@ int main(int argc, char **argv)
         exit(-1);
     }
 
-    nitems = min(atoi(argv[1]), MAXNITEMS);
-    nthreads = min(atoi(argv[2]), MAXNTHREADS);
+    nitems = MIN(atoi(argv[1]), MAXNITEMS);
+    nthreads = MIN(atoi(argv[2]), MAXNTHREADS);
 
     // start all producers and one consumer
     for (i=0; i<nthreads; i++)
@@ -85,6 +82,9 @@ static void consume_wait(int i)
             pthread_mutex_unlock(&shared.mutex);
             return ; // an item is ready
         }
+        // 这里的lock->unlock->lock...被称为轮询，也是对CPU的浪费
+        // 这里用条件变量会更好，它允许一个线程睡眠到某个事件发生
+        // 为止
         pthread_mutex_unlock(&shared.mutex);
     }
 }
@@ -94,7 +94,7 @@ void *consume(void *arg)
     int i;
     for (i=0; i<nitems; i++)
     {
-        consume_wait(i);
+        consume_wait(i); // 等待生产者产生了第i个条目
         if (shared.buff[i] != i)
         {
             printf("buff[%d] = %d\n", i, shared.buff[i]);
@@ -102,3 +102,4 @@ void *consume(void *arg)
     }
     return NULL;
 }
+

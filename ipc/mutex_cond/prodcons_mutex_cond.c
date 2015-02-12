@@ -4,11 +4,8 @@
 #include <pthread.h>
 #include <errno.h>
 #include <assert.h>
+#include "../unpipc.h"
 
-#define MAXNITEMS   1000000
-#define MAXNTHREADS 100
-
-#define min(a, b) (a)>(b)?(b):(a)
 
 int nitems;  // read-only by producer and consumer
 int buff[MAXNITEMS];
@@ -42,8 +39,8 @@ int main(int argc, char **argv)
         exit(-1);
     }
 
-    nitems = min(atoi(argv[1]), MAXNITEMS);
-    nthreads = min(atoi(argv[2]), MAXNTHREADS);
+    nitems = MIN(atoi(argv[1]), MAXNITEMS);
+    nthreads = MIN(atoi(argv[2]), MAXNTHREADS);
 
     // start all producers and one consumer
     for (i=0; i<nthreads; i++)
@@ -66,6 +63,8 @@ int main(int argc, char **argv)
 
 void *produce(void *arg)
 {
+    int dosignal = 0;
+
     for(;;)
     {
         pthread_mutex_lock(&put.mutex);
@@ -81,13 +80,14 @@ void *produce(void *arg)
         pthread_mutex_unlock(&put.mutex);
 
         pthread_mutex_lock(&nready.mutex);
-        if (nready.nready == 0)
-        {
-            pthread_cond_signal(&nready.cond);
-        }
+        dosignal = (nready.nready == 0);
         nready.nready++;
         pthread_mutex_unlock(&nready.mutex);
 
+        if (dosignal)
+        {
+            pthread_cond_signal(&nready.cond);
+        }
         *((int *)arg) += 1;
     }
 }
@@ -112,3 +112,4 @@ void *consume(void *arg)
     }
     return NULL;
 }
+
