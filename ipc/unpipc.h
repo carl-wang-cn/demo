@@ -12,4 +12,6 @@
 #define MAXNITEMS   1000000
 #define MAXNTHREADS 100
 
+#define MAXLINE 80
+
 #endif

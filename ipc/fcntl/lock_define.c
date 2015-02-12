@@ -1,8 +1,7 @@
 #include "lock_define.h"
+#include "../unpipc.h"
 
-#define FILE_MODE (S_IRUSR | S_IWUSR | S_ISGID | S_IROTH)
 static const char *SEQFILE = "seqno";
-#define MAXLINE 80
 
 int lock_reg(int fd, int cmd, int type, off_t offset, int whence, off_t len)
 {
