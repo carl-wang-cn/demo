@@ -3,19 +3,20 @@
 #include <errno.h>
 #include <stdlib.h>
 
+
 int main(int argc, char **argv)
 {
-    long mq_open_max = sysconf(_SC_MQ_OPEN_MAX);
+    long sem_nsems_max = sysconf(_SC_SEM_NSEMS_MAX);
 
     // return -1 and errno == 0, means no definite limit
-    if (-1 == mq_open_max && 0 != errno)
+    if (-1 == sem_nsems_max)
     {
         printf("sysconf return -1 and errno = %d\n", errno);
-        printf("MQ_OPEN_MAX == -1 means no definite limit\n");
+        printf("SEM_NSEMS_MAX == -1 means no definite limit\n");
     }
 
-    printf("MQ_OPEN_MAX = %ld, MQ_PRIO_MAX = %ld\n", mq_open_max,
-            sysconf(_SC_MQ_PRIO_MAX));
+    printf("SEM_NSEMS_MAX = %ld, SEM_VALUE_MAX = %ld\n",
+            sem_nsems_max,  sysconf(_SC_SEM_VALUE_MAX));
 
     return 0;
 }

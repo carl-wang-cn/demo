@@ -6,13 +6,15 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <semaphore.h>
+#include <assert.h>
+#include "../unpipc.h"
 
-#define FILE_MODE (S_IRUSR | S_IWUSR | S_ISGID | S_IROTH)
 
 int main(int argc, char **argv)
 {
     sem_t *sem;
     int val;
+    int ret = 0;
 
     if (argc != 2)
     {
@@ -21,8 +23,12 @@ int main(int argc, char **argv)
     }
 
     sem = sem_open(argv[1], 0);
-    sem_getvalue(sem, &val);
+    assert(SEM_FAILED != sem);
+
+    ret = sem_getvalue(sem, &val);
+    assert(-1 != ret);
     printf("value = %d\n", val);
 
     return 0;
 }
+

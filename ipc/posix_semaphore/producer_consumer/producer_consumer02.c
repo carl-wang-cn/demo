@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
+#include "../../unpipc.h"
 
-#define FILE_MODE (S_IRUSR | S_IWUSR | S_ISGID | S_IROTH)
 #define NBUFF 10
 
 typedef struct

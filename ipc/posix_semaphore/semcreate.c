@@ -6,8 +6,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <semaphore.h>
+#include <assert.h>
+#include "../unpipc.h"
 
-#define FILE_MODE (S_IRUSR | S_IWUSR | S_ISGID | S_IROTH)
 
 int main(int argc, char **argv)
 {
@@ -23,13 +24,13 @@ int main(int argc, char **argv)
     {
         switch (c)
         {
-            case 'e':
-                flags |= O_EXCL;
-                break;
+        case 'e':
+            flags |= O_EXCL;
+            break;
 
-            case 'i':
-                value  = atoi(optarg);
-                break;
+        case 'i':
+            value  = atoi(optarg);
+            break;
         }
     }
 
@@ -40,7 +41,12 @@ int main(int argc, char **argv)
     }
 
     sem = sem_open(argv[optind], flags, FILE_MODE, value);
-    sem_close(sem); // 如果忘记sem_close， 当进程终止时，该信号量也被关闭（所占用的系统资源随之释放），但它的值仍然保持
+    assert(SEM_FAILED != sem);
+
+    //如果忘记sem_close， 当进程终止时，该信号量也被关闭（所占用的系统资源随之
+    //释放），但它的值仍然保持
+    sem_close(sem);
 
     return 0;
 }
+

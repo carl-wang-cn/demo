@@ -6,8 +6,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <semaphore.h>
+#include "../unpipc.h"
 
-#define FILE_MODE (S_IRUSR | S_IWUSR | S_ISGID | S_IROTH)
 
 int main(int argc, char **argv)
 {
@@ -21,3 +21,4 @@ int main(int argc, char **argv)
 
     return 0;
 }
+

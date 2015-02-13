@@ -61,6 +61,7 @@ struct flock
    > 在进程终止时由内核完成已有锁清理工作的特性，只有fcntl记录上锁完全提供了，System V
    信号量把它作为一个选项提供。互斥锁、条件变量、读写锁、Posix信号量，并不在进程终止时
    执行清理工作。
+
 6. 锁住整个文件的两种方式
    * l_whence=SEEK_SET, l_start=0, l_len=0（常用，只需一个函数调用）
    * 使用lseek把读写指针定位到文件头，然后指定l_whence=SEEK_CUR, l_start=0, l_len=0

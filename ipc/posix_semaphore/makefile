@@ -1,23 +1,29 @@
-all: semcreate semunlink semgetvalue semwait sempost
+FLAGS = -Wall -g
+
+all: semcreate semunlink semgetvalue semwait sempost get_sys_conf
 
 semcreate: semcreate.c
-	gcc semcreate.c -o semcreate -pthread
+	gcc $(FLAGS) semcreate.c -o semcreate -pthread
 
 semunlink: semunlink.c
-	gcc semunlink.c -o semunlink -pthread
+	gcc $(FLAGS) semunlink.c -o semunlink -pthread
 
 semgetvalue: semgetvalue.c
-	gcc semgetvalue.c -o semgetvalue -pthread
+	gcc $(FLAGS) semgetvalue.c -o semgetvalue -pthread
 
 semwait: semwait.c
-	gcc semwait.c -o semwait -pthread
+	gcc $(FLAGS) semwait.c -o semwait -pthread
 
 sempost: sempost.c
-	gcc sempost.c -o sempost -pthread
+	gcc $(FLAGS) sempost.c -o sempost -pthread
+
+get_sys_conf: get_sys_conf.c
+	gcc $(FLAGS) get_sys_conf.c -o get_sys_conf
 
 clean:
-	rm semcreate -f
-	rm semunlink -f
-	rm semgetvalue -f
-	rm semwait -f
-	rm sempost -f
+	rm -f semcreate
+	rm -f semunlink
+	rm -f semgetvalue
+	rm -f semwait
+	rm -f sempost
+	rm -f get_sys_conf
