@@ -14,7 +14,7 @@ mmap函数把一个文件或一个Posix共享内存区对象映射到调用进�
 2. 使用特殊文件以提供匿名内存映射
 3. 使用shm_open以提供无亲缘关系进程间的Posix共享内存区
 
-```cpp
+```
 #include <sys/mman.h>
 
 void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset);
