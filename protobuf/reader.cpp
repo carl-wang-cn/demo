@@ -64,6 +64,9 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    // protobuf can print out the structed message
+    cout << address_book.DebugString() << endl; 
+
     list_people(address_book);
 
     google::protobuf::ShutdownProtobufLibrary();
