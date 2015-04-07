@@ -33,6 +33,6 @@ examples:
 - [x] config logger by calling API in code
 - [x] config with a dict in file
 - [x] config with a traditional config file
-- [ ] logger can rotate according to size
+- [x] logger can rotate according to size
 - [ ] logger can rotate according to time
 - [x] logger rotate on restart
