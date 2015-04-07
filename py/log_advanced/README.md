@@ -35,3 +35,4 @@ examples:
 - [x] config with a traditional config file
 - [ ] logger can rotate according to size
 - [ ] logger can rotate according to time
+- [x] logger rotate on restart
