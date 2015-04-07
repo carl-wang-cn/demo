@@ -34,5 +34,5 @@ examples:
 - [x] config with a dict in file
 - [x] config with a traditional config file
 - [x] logger can rotate according to size
-- [ ] logger can rotate according to time
+- [x] logger can rotate according to time
 - [x] logger rotate on restart
