@@ -14,7 +14,7 @@ void list_people(const AddressBook &address_book)
 
         cout << "Person ID: " << person.id() << endl;
         cout << "    Name:  " << person.name() << endl;
-        if (person.has_email())
+        if (person.has_email()) // true only if person.set_email() was called before
         {
             cout << "   Email: " << person.email() << endl;
         }
