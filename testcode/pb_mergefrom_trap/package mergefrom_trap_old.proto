@@ -1,0 +1,13 @@
+package mergefrom_trap;
+
+message Person
+{
+    required string name = 1;
+    required int32  age = 2;
+}
+
+message AddressBook
+{
+    required string host_name = 1;
+    repeated Person person = 2;
+}

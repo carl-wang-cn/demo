@@ -1,0 +1,178 @@
+[carl pb_mergefrom_trap]$ python write_new.py addressbook
+address_book: host_name: "carl"
+person {
+  name: "person1"
+  age: 30
+  new1: 1
+  new2: 2
+}
+new3: 3
+new4: 4
+
+[carl pb_mergefrom_trap]$ g++ read_new_write_old.cpp mergefrom_trap.pb.cc -lprotobuf -o read_new_write_old.bin
+
+[carl pb_mergefrom_trap]$ ./read_new_write_old.bin addressbook
+book: host_name: "carl"
+person {
+  name: "person1"
+  age: 30
+  3: 1
+  4: 2
+}
+3: 3
+4: 4
+
+book: host_name: "carl_copyfrom_update"
+person {
+  name: "person1"
+  age: 100
+  3: 1
+  4: 2
+}
+3: 3
+4: 4
+
+book: host_name: "carl_copyfrom_update"
+person {
+  name: "person1"
+  age: 100
+  3: 1
+  4: 2
+}
+3: 3
+4: 4
+
+book: host_name: "carl_copyfrom_update"
+person {
+  name: "person1"
+  age: 100
+  3: 1
+  4: 2
+}
+3: 3
+4: 4
+
+book: host_name: "carl_copyfrom_update"
+person {
+  name: "person1"
+  age: 100
+  3: 1
+  4: 2
+}
+3: 3
+4: 4
+
+book: host_name: "carl_copyfrom_update"
+person {
+  name: "person1"
+  age: 100
+  3: 1
+  4: 2
+}
+3: 3
+4: 4
+
+a big trap is coming ....
+a big trap is coming ....
+a big trap is coming ....
+a big trap is coming ....
+a big trap is coming ....
+a big trap is coming ....
+a big trap is coming ....
+a big trap is coming ....
+a big trap is coming ....
+a big trap is coming ....
+a big trap is coming ....
+a big trap is coming ....
+a big trap is coming ....
+a big trap is coming ....
+a big trap is coming ....
+book: host_name: "carl_copyfrom_update"
+person {
+  name: "person1"
+  age: 100
+  3: 1
+  4: 2
+}
+3: 3
+4: 4
+
+book: host_name: "carl_update_mergefrom"
+person {
+  name: "person1"
+  age: 100
+  3: 1
+  4: 2
+  3: 1
+  4: 2
+}
+3: 3
+4: 4
+
+book: host_name: "carl_update_mergefrom"
+person {
+  name: "person1"
+  age: 100
+  3: 1
+  4: 2
+  3: 1
+  4: 2
+}
+3: 3
+4: 4
+
+book: host_name: "carl_update_mergefrom"
+person {
+  name: "person1"
+  age: 100
+  3: 1
+  4: 2
+  3: 1
+  4: 2
+  3: 1
+  4: 2
+  3: 1
+  4: 2
+}
+3: 3
+4: 4
+
+book: host_name: "carl_update_mergefrom"
+person {
+  name: "person1"
+  age: 100
+  3: 1
+  4: 2
+  3: 1
+  4: 2
+  3: 1
+  4: 2
+  3: 1
+  4: 2
+}
+3: 3
+4: 4
+
+book: host_name: "carl_update_mergefrom"
+person {
+  name: "person1"
+  age: 100
+  3: 1
+  4: 2
+  3: 1
+  4: 2
+  3: 1
+  4: 2
+  3: 1
+  4: 2
+  3: 1
+  4: 2
+  3: 1
+  4: 2
+  3: 1
+  4: 2
+  3: 1
+  4: 2
+}
+3: 3
+4: 4
