@@ -38,7 +38,7 @@ int pthread_mutex_unlock(pthread_mutex_t *mptr);
 
 * prodcons_mutex.c 使用互斥锁的producer-consumer示例
 
-##条件变量
+## 条件变量
 
 互斥锁用于上锁，条件变量用于等待.
 
@@ -94,7 +94,7 @@ pthread_mutex_unlock(&var.mutex);
 * prodcons_mutex_cond.c 使用条件变量的producer-consumer示例
 
 
-###条件变量的定时等待和广播
+### 条件变量的定时等待和广播
 
 ```cpp
 #include <pthread.h>
@@ -113,7 +113,7 @@ struct timespec
 abstime是UTC时间，而不是时间差
 ```
 
-##互斥锁和条件变量的属性
+## 互斥锁和条件变量的属性
 
 ```cpp
 #include <pthread.h>
@@ -161,7 +161,7 @@ memorypthread_mutexattr_init(&mattr);  // 初始化属性
 pthread_mutex_init(mptr, &mattr); // 初始化锁
 ```
 
-##持有锁期间进程终止
+## 持有锁期间进程终止
 
 * 没有办法让系统在进程终止时自动释放所持有的锁。
 * 进程终止时，内核总是自动清理的唯一同步锁类型是：fcntl记录锁 

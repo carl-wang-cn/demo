@@ -1,13 +1,11 @@
 Posix消息队列
 ===
 
-###基本特性
+### 基本特性
 ---
 
-1. 在某个进程往一个队列写入消息之前, 并不需要另外某个进程在该队列上等待消息的到达.
-   这个与管道和FIFO是相反的, 对后两者来说, 除非读出者已存在, 否则先有写入者是没有意义的.
-2. 消息队列具有随内核的持续性.一个进程可以往某个队列写入一些消息, 然后终止, 再让
-   另外一个进程在以后某个时刻读出这些消息
+1. 在某个进程往一个队列写入消息之前, 并不需要另外某个进程在该队列上等待消息的到达. 这个与管道和FIFO是相反的, 对后两者来说, 除非读出者已存在, 否则先有写入者是没有意义的.
+2. 消息队列具有随内核的持续性.一个进程可以往某个队列写入一些消息, 然后终止, 再让另外一个进程在以后某个时刻读出这些消息
 3. 队列属性
 
 **相关API**
@@ -21,15 +19,14 @@ mqd_t mq_open(const char *name, int oflag, /* mode_t mode, struct mq_attr *attr 
 int mq_close(mqd_t mqdes);
 返回：成功返回0, 失败返回-1
 注意: 调用进程可以不再使用该描述符, 但其消息队列并不从系统中删除.
-      要从系统中删除用作mq_open第一个参数的某个name, 必须调用mq_unlink
+      要从系统中删除消息队列, 必须调用mq_unlink
 
 int mq_unlink(const char *name);
 返回：成功返回0, 失败返回-1
 
-每个消息队列有一个保存其当前打开着描述符数的引用计数器, 当一个消息队列的
-引用计数仍大于0时, 其name就能删除, 但是该队列的析构要到最后一个mq_close
-发生时才进行队列及其上的消息, 一直存在到调用mq_unlink并让它的引用计数达
-到0以删除该队列为止
+每个消息队列有一个保存其当前打开着描述符数的引用计数器,
+当一个消息队列的引用计数仍大于0时, 可以删除该队列的name, 但是该队列不会析构.
+最后一个mq_close后, 再调用mq_unlink, 才会从系统中删除该队列及其上的消息
 
 struct mq_attr
 {
@@ -71,7 +68,7 @@ int mq_notify(mqd_t mqdes, const struct sigevent *notification);
 * mq_receive.c 从posix消息队列收取消息
 
 
-###Posix消息队列限制
+### Posix消息队列限制
 ---
 
 * MQ_OPEN_MAX 一个进程能够同时拥有的打开着消息队列的最大数目(Posix要求它至少为8)
@@ -79,7 +76,7 @@ int mq_notify(mqd_t mqdes, const struct sigevent *notification);
 * get_sys_conf.c 获取当前系统的MQ_OPEN_MAX和MQ_PRIO_MAX值
 
 
-###Posix消息队列的异步事件通知
+### Posix消息队列的异步事件通知
 ---
 
 Posix消息队列允许异步事件通知, 以告知何时有一个消息放置到了某个空消息队列中.有两种方式可供选择
@@ -115,19 +112,15 @@ int mq_notify(mqd_t mqdes, const struct sigevent *notification);
 
 该函数的若干使用规则：
 
-1. 如果notification参数非空, 那么当前进程希望在有一个消息到达所指定的先前为空
-   的队列时得到通知.（我们说该进程被注册为接收该队列的通知）
-2. 如果notification参数为NULL,  而且当前进程目前被注册为接收所指定队列的通知,
-   那么已存在的注册将被撤销
-3. 任意时刻只有一个进程可以被注册为接收某个给定队列的通知
-4. 当有一个消息到达某个先前为空的队列, 而且已有一个进程被注册为接受该队列的通
-   知时, 只有在没有任何线程阻塞在该队列的mq_receive调用中的前提下, 通知才会发
-   出.也就是说, 在mq_receive调用中的阻塞比任何通知的注册都优先
+1. 如果notification参数非空, 那么当前进程希望在有一个消息到达所指定的先前为空的队列时得到通知.（我们说该进程被注册为接收该队列的通知）
+2. 如果notification参数为NULL,  而且当前进程目前被注册为接收所指定队列的通知, 那么已存在的注册将被撤销
+3. 任意时刻只有一个进程可以被注册接收某个给定队列的通知
+4. 当有一个消息到达某个先前为空的队列, 而且已有一个进程被注册接受该队列的通知时, 只有在没有任何线程阻塞在该队列的mq_receive调用中的前提下, 通知才会发出.也就是说, 在mq_receive调用中的阻塞比任何通知的注册都优先
 5. 当该通知被发送给它的注册进程时, 其注册即被撤销.该进程必须再次调用mq_notify以重新注册.
 
 ```
 
-####产生一个信号
+#### 产生一个信号
 ---
 
 **异步信号安全函数**
@@ -157,7 +150,7 @@ int mq_notify(mqd_t mqdes, const struct sigevent *notification);
 |fdatasync|raise|sleep|write|
 |fork|read|stat||
 
-**注意：** 没有列在上表中的函数, 不可以在信号处理程序中调用.注意所有标准I/O函数和pthread_XXX函数都没有列在其中.
+**注意：** 没有列在上表中的函数, 不可以在信号处理程序中调用. 注意所有标准I/O函数和pthread_XXX函数都没有列在其中.
 
 * mq_notify01.c 使用信号通知读Posix消息队列
 
@@ -179,35 +172,30 @@ sig中, 返回值为0. 这个过程称为"同步地等待一个异步事件"
 
 * mq_notify03.c 使用select的Posix消息队列
 
-####创建一个线程
+#### 创建一个线程
 ---
 
-异步事件通知的另一种方式是把sigev_notify设置成SIGEV_THREAD, 这会创建一个新的线程.该线程
-调用由sigev_notify_function指定的函数, 所用的参数由sigev_value指定.新线程的线程属性由
-sigev_notify_attributes指定, 传NULL指针表示使用默认属性.
+异步事件通知的另一种方式是把sigev_notify设置成SIGEV_THREAD, 这会创建一个新的线程. 该线程调用由sigev_notify_function指定的函数, 所用的参数由sigev_value指定.新线程的线程属性由sigev_notify_attributes指定, 传NULL指针表示使用默认属性.
 
 * mq_notify04.c 启动一个新线程的mq_notify
 
 
-###Posix实时信号
+### Posix实时信号
 ---
 
 信号可划分为两个大组
 1. 其值在SIGRTMIN和SIGRTMAX(包括两者在内)的实时信号
 2. 所有其他信号: SIGALARM, SIGINT, SIGKILL, 等等
 
-只有在sigaction调用中指定了SA_SIGINFO, 并且是对SIGRTMIN-SIGRTMAX范围内
-的信号进行处理时, 实时行为才有保证
+只有在sigaction调用中指定了SA_SIGINFO, 并且是对SIGRTMIN-SIGRTMAX范围内的信号进行处理时, 实时行为才有保证
 
-####实时行为隐含特征：
+#### 实时行为隐含特征：
 
-* 信号是排队的.如果一个信号产生了3次, 它就递交3次.
-* 当有多个SIGRTMIN-SIGRTMAX范围内的解阻塞信号排队时, **值较小**的信号先于值较大的信
-  号递交.（demo signal_realtime.c 中对此进行了验证）
-* 当某个非实时信号递交时, 传递给它的信号处理函数的唯一参数是该信号的值；实时信号则
-  携带更多信息.通过设置SA_SIGINFO标志安装的任意实时信号处理函数声明如下：
+* 信号是排队的. 如果一个信号产生了3次, 它就递交3次.
+* 当有多个SIGRTMIN-SIGRTMAX范围内的解阻塞信号排队时, **值较小**的信号先于值较大的信号递交.（demo signal_realtime.c 中对此进行了验证）
+* 当某个非实时信号递交时, 传递给它的信号处理函数的唯一参数是该信号的值；实时信号则携带更多信息. 通过设置SA_SIGINFO标志安装的任意实时信号处理函数声明如下：
 
-```
+```cpp
 void function(int signo, siginfo_t *info, void *context);
 
 typedef struct
@@ -219,10 +207,9 @@ typedef struct
 
 ```
 
-* 一些新函数定义成使用实时信号工作.例如sigqueue函数用于代替kill函数向某个进程发送
-  一个信号, 该新函数允许发送者虽所发送信号传递一个sigval联合
+* 一些新函数定义成使用实时信号工作. 例如sigqueue函数用于代替kill函数向某个进程发送一个信号, 该新函数允许发送者虽所发送信号传递一个sigval联合
 
-####实时信号由siginfo_t结构中的si_code来标识如何产生
+#### 实时信号由siginfo_t结构中的si_code来标识如何产生
 
 |信号        |说明                                                 |
 |:-----------|:----------------------------------------------------|
@@ -236,8 +223,6 @@ typedef struct
 siginfo_t结构的si_value成员只有在si_code为SI_ASYNCIO, SI_MESGQ,
 SI_QUEUE, SI_TIMER时才有效.
 
-* signal_realtime.c 演示实时信号的简单测试程序.由父进程连续触发9个信号, 信号值从da
-  到小触发, 每个信号伴随一个int型参数.此示例证明了实时信号是FIFO的, 并且较小值的信
-  号优先递交
+* signal_realtime.c 演示实时信号的简单测试程序.由父进程连续触发9个信号, 信号值从大到小触发, 每个信号伴随一个int型参数.此示例证明了实时信号是FIFO的, 并且较小值的信号优先递交
 
 

@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 
     // mq_close后, 调用进程可不再使用该描述符,但其消息队列并不从系统中删除
     // 一个进程终止时，它的所有打开着的消息队列都关闭，就像调用了mq_close一样
-    // 要从系统中删除用作mq_open第一个参数的某个name, 必须调用mq_unlink
+    // 要从系统中删除该消息队列, 必须调用mq_unlink
     mq_close(mqd);
 
     return 0;
